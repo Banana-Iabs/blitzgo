@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Go Board</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="goBoard"></div>
+  
+<!--<button id="toggleButton">Save Piece</button>-->
+<div id="turnInfo">Waiting for players...</div>
+<div id="playerInfo">Players: 1/2</div>
+<div id="sessionCode"></div>
+
+  
+<p>Black Territory: <span id="blackLive"></span></p>
+<p>White Territory: <span id="whiteLive"></span></p>
+  
+<button id="endGameButton">Resign</button>
+
+<div id="endGamePopup" class="popup">
+  <div class="popup-content">
+    <span class="close">—</span>
+    <p>Winner: <span id="winner"></span></p>
+    <p>Black Territory: <span id="blackTerritory"></span></p>
+    <p>White Territory: <span id="whiteTerritory"></span></p>
+    <button id="redirectButton">Return to Main Menu</button> <!-- New button added -->
+  </div>
+</div>
+
+
+<!--<div id="buttonCover"></div>  -->
+<script src="script.js" defer type="module"></script>
+</body>
+</html>
