@@ -8,18 +8,41 @@
   body {
     font-family: Arial, sans-serif;
     text-align: center;
-    background-color: #808080; 
+    background-color: #745D49;
   }
   button {
+    padding: 3px 7px; /* Smaller padding to reduce overall size */
+    font-size: 14px; /* Smaller font size */
+    margin-top: -20px; /* Move up relative to its normal position */
+    display: inline-flex; /* Keep the flex layout for internal alignment */
+    align-items: center; /* Center the content vertically */
+    gap: 5px; /* Reduce gap between icon and text for a compact design */
+    background-color: #DEB987; /* Background color as before */
+    color: #333; /* Text color as before */
+    border-radius: 4px; /* Rounded corners as before */
+    cursor: pointer; /* Cursor as before */
     padding: 10px 20px;
     font-size: 16px;
     margin: 10px;
     cursor: pointer;
   }
+  .image-container {
+    margin-top: 20px;
+    overflow: hidden;
+    position: relative; /* Important for positioning the child img absolutely */
+  }
+
+  #resizable-image {
+    width: 410px;
+    height: 149px;
+    pointer-events: none;
+  }
 </style>
 </head>
 <body>
-  <h1>BlitzGo</h1>
+  <div class="image-container">
+    <img src="logo2.png" alt="Resizable and Movable Image" id="resizable-image">
+  </div>
   <button id="createGameBtn">Create Game</button>
   <button id="joinGameBtn">Join Game</button>
   

@@ -1,15 +1,109 @@
 body {
-  background-color: #808080; /* Sets the webpage background to grey */
+  background-color: #45362F; /* Sets the webpage background to grey */
   overflow: hidden
+}
+
+.container {
+  display: flex;
+}
+
+#gamePanel {
+  width: 207.72px;
+  height: 482px;
+  background: #745D49; /* Just an example background */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  padding: 20px;
+  position: absolute;
+  border: 1px solid #3c302a;
+  top: 50%;
+  left: 50%;
+  transform: translate(130%, -50%);
+}
+
+#endGameButton {
+    width: 80px;  
+    height: 30px; 
+    border-radius: 3px; 
+    background-color: #DEB987; 
+    color: black;
+    font-family: 'Chivo', sans-serif;
+    font-size: 14px;  
+    text-align: center; 
+    line-height: -20px; 
+    cursor: pointer;  
+    border: none;     
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(26%, 690%);
+}
+
+#copyButton{
+    text-align: center;
+    width: 80px;  
+    height: 30px; 
+    border-radius: 3px; 
+    background-color: #DEB987; 
+    color: black;
+    font-family: 'Chivo', sans-serif;
+    font-size: 14px;  
+    text-align: center; 
+    line-height: -20px; 
+    cursor: pointer;  
+    border: none;     
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+}
+
+#endGameButton img {
+    margin-right: 0px; /* Space between the image and text */
+    width: 22px; /* Adjust based on your image */
+    height: 22px; /* Adjust based on your image */
+}
+
+#endGameButton:hover {
+    background-color: #C59D77; /* Darker shade when hovered */
+}
+
+#drawButton {
+    width: 80px;  
+    height: 30px; 
+    border-radius: 3px; 
+    background-color: #DEB987; 
+    color: black;
+    font-family: 'Chivo', sans-serif;
+    font-size: 14px;  
+    text-align: center; 
+    line-height: -20px; 
+    cursor: pointer;  
+    border: none;     
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-120%, 690%);
+}
+
+#drawButton img {
+    margin-right: 4.5px; /* Space between the image and text */
+    width: 15px; /* Adjust based on your image */
+    height: 15px; /* Adjust based on your image */
+}
+
+#drawButton:hover {
+    background-color: #C59D77; /* Darker shade when hovered */
 }
 
 #goBoard {
   display: grid;
-  grid-template-columns: repeat(15, 1fr);
+/*  grid-template-columns: repeat(15, 1fr);*/
   gap: 0px; /* Remove the gap to allow lines to connect */
-  width: 390px; /* Adjust as necessary */
-  height: 390px;
-  border: 2px solid black;
+  width: 0px; 
+  height: 0px;
+  border: 2.5px solid black;
   background-color: #deb887; /* Resembling a wooden board */
   position: absolute;
   top: 50%;
@@ -143,7 +237,7 @@ body {
   border-radius: 5px;
   position: absolute;
   bottom: 0%;
-  left: 50%;
+  left: -132%;
   transform: translate(-50%, 0%);
 }
 
@@ -183,7 +277,7 @@ body {
 }
 
 
-#copyButton {
+#copyButton{
   padding: 3px 7px; /* Smaller padding to reduce overall size */
   font-size: 14px; /* Smaller font size */
   margin-top: -20px; /* Move up relative to its normal position */
@@ -201,7 +295,7 @@ body {
   box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Shadow for button hover */
 }
 
-#copyButton .copyIcon {
+#copyButton .copyIcon{
   width: 15px; /* Smaller width for the icon */
   height: 15px; /* Smaller height for the icon */
   background-color: #fff; /* Background color as before */
@@ -213,4 +307,101 @@ body {
   top: 2px; /* Adjust to align with the smaller icon */
   right: -2px; /* Adjust to align with the smaller icon */
 }
+
+.image-container {
+  width: 194px; /* Initial width */
+  height: 94px; /* Initial height */
+  overflow: hidden;
+  position: relative; /* Important for positioning the child img absolutely */
+}
+
+#resizable-image {
+  width: 100%;
+  height: 100%;
+pointer-events: none;
+  position: absolute;
+}
+
+
+#evalBar {
+  width: 37.72px;
+  height: 492px;
+  background: #745D49; /* Just an example background */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: start;
+  padding: 20px;
+  position: absolute;
+  border: 1px solid #3c302a;
+  top: 50%;
+  left: 50%;
+  transform: translate(-515%, -50%);
+}
+
+.territory-bar {
+  width: 38%;
+  position: absolute;
+}
+
+.white-territory {
+  background-color: #fff;
+  left: 100;
+/*  bottom: 7.5%;*/
+z-index: 1;
+}
+
+.black-territory {
+  background-color: #262421;
+  right: 100;
+/*  top: 7.5%;*/
+  z-index: 1;
+}
+
+#blackLive {
+  position: relative;
+
+  font-family: 'Chivo', sans-serif;
+  font-size: 13px;  
+  top: 5px;
+  z-index: 20;
+}
+
+#turnInfo, #playerInfo, #sessionCode, #player {
+  position: relative;
+  font-family: 'Chivo', sans-serif;
+  font-size: 13px;  
+  z-index: 20; 
+  margin-top: 5px;
+  color: white;
+}
+
+#whiteLive {
+  position: relative;
+
+  bottom: -386px;
+  font-family: 'Chivo', sans-serif;
+  font-size: 14px;  
+  z-index: 20;
+}
+
+.timer {
+  position: fixed;  /* Fixed positioning relative to the viewport */
+  padding: 10px;    /* Padding around the text */
+  font-size: 24px;  /* Larger text size */
+  color: white;     /* White text */
+  background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+  border-radius: 5px; /* Rounded corners */
+  z-index: 100;    /* Ensures it stays on top of other content */
+}
+
+#player1Timer {
+  top: -10px;    /* 20px from the bottom */
+}
+
+#player2Timer {
+  bottom: -10px;    /* 20px from the bottom */
+}
+
+
 

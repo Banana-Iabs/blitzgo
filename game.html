@@ -2,44 +2,59 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Chivo:wght@400;700&display=swap" rel="stylesheet">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Go Board</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-<div id="goBoard"></div>
   
-<!--<button id="toggleButton">Save Piece</button>-->
-<div id="turnInfo">Waiting for players...</div>
-<div id="playerInfo">Players: 1/2</div>
-<div id="sessionCode"></div>
 
-  
-<p>Black Territory: <span id="blackLive"></span></p>
-<p>White Territory: <span id="whiteLive"></span></p>
-<p>Player: <span id="player"></span></p>
-<div id="linkContainer">
-  <button id="copyButton">Copy Join Link</button>
-</div>
+<div class="container">
+  <div id="goBoard"></div>
+  <div id="evalBar" class="eval-bar">
+    <div id="whiteTerritoryBar" class="territory-bar white-territory"></div>
+    <div id="blackTerritoryBar" class="territory-bar black-territory"></div>
+    <div><p><span id="blackLive" class="black-live"></span></p></div>
+    <div><p><span id="whiteLive" class="white-live"></span></p></div>
+<!--
+    <div id="player1Timer" class="timer">1:00</div>
+    <div id="player2Timer" class="timer">1:00</div>
+-->
+
+  </div>
 
 
-  
-  
-<button id="endGameButton">Resign</button>
+  <div id="gamePanel">
+  <div class="image-container">
+    <img src="logo.png" alt="Resizable and Movable Image" id="resizable-image">
+  </div>
 
-<div id="endGamePopup" class="popup">
-  <div class="popup-content">
-    <span class="close">—</span>
-    <p>Winner: <span id="winner"></span></p>
-    <p>Black Territory: <span id="blackTerritory"></span></p>
-    <p>White Territory: <span id="whiteTerritory"></span></p>
-    <button id="redirectButton">Return to Main Menu</button> <!-- New button added -->
+    <div id="turnInfo">Waiting for players...</div>
+    <div id="playerInfo">Players: 1/2</div>
+    <div id="sessionCode"></div>
+    <p><span id="player"></span></p>
+    <div id="linkContainer">
+      <button id="copyButton">Copy Link</button>
+    </div>
+    <button id="endGameButton">
+        <img src="flag.png" alt="Icon" style="vertical-align: middle;">Resign
+    </button>
+    <button id="drawButton">
+      <img src="half.png" alt="Icon" style="vertical-align: middle;">Draw
+    </button>
+    <div id="endGamePopup" class="popup">
+      <div class="popup-content">
+        <span class="close">—</span>
+        <p>Winner: <span id="winner"></span></p>
+        <p>Black Territory: <span id="blackTerritory"></span></p>
+        <p>White Territory: <span id="whiteTerritory"></span></p>
+        <button id="redirectButton">Return to Main Menu</button>
+      </div>
+    </div>
   </div>
 </div>
 
-
-<!--<div id="buttonCover"></div>  -->
 <script src="script.js" defer type="module"></script>
 </body>
 </html>

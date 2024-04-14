@@ -22,6 +22,7 @@ let secondCount = 0;
 const sessionInfo = document.getElementById('sessionCode');
 sessionInfo.textContent = "Join Code: " + id;
 const resignButton = document.getElementById('endGameButton');
+//const drawButton = document.getElementById('drawButton');
 const endGamePopup = document.getElementById('endGamePopup');
 const closeButton = document.querySelector('.close');
 const winnerSpan = document.getElementById('winner');
@@ -36,6 +37,77 @@ surroundSound.volume = 0.5;
 const victory = new Audio('victory.mp3');
 victory.volume = 0.25;
 const boardSize = parseInt(localStorage.getItem('boardSize'));
+let isBlack = null;
+
+
+
+//class PlayerTimer {
+//    constructor(elementId, minutes) {
+//        this.duration = minutes * 60 * 1000; // Duration in milliseconds
+//        this.element = document.getElementById(elementId);
+//        this.startTime = null;
+//        this.elapsedTime = 0;
+//        this.running = false;
+//    }
+//
+//    start() {
+//        if (this.running) {
+//            this.pause();
+//        }
+//        this.running = true;
+//        this.startTime = Date.now() - this.elapsedTime;
+//        this.interval = setInterval(() => this.update(), 1000);
+//    }
+//
+//    pause() {
+//        if (this.running) {
+//            clearInterval(this.interval);
+//            this.elapsedTime = Date.now() - this.startTime;
+//            this.running = false;
+//        }
+//    }
+//
+//    reset(minutes) {
+//        this.duration = minutes * 60 * 1000;
+//        this.elapsedTime = 0;
+//        this.updateDisplay();
+//    }
+//
+//    update() {
+//      if(!done){
+//        const now = Date.now();
+//        this.elapsedTime = now - this.startTime;
+//        if (this.elapsedTime >= this.duration) {
+//            clearInterval(this.interval);
+//            if(this.element.id.includes('1')){
+//              setDoc(ref, { win: true, resigned: true, resignedPlayerisBlack: !isBlack }, { merge: true });
+//              done = true;
+//              disable();
+//            } else{
+//              setDoc(ref, { win: true, resigned: true, resignedPlayerisBlack: isBlack }, { merge: true });
+//              done = true;
+//              disable();
+//                
+//                
+//            }
+//            // Handle game over or disable game controls here
+//            this.running = false;
+//        } else {
+//            this.updateDisplay();
+//        }
+//      }
+//    }
+//
+//    updateDisplay() {
+//        let remaining = this.duration - this.elapsedTime;
+//        let minutes = Math.floor(remaining / 60000);
+//        let seconds = Math.floor((remaining % 60000) / 1000);
+//        this.element.textContent = `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+//    }
+//}
+
+
+
 
 async function gameExists(){
   const docSnapshot = await getDoc(doc(db, "sessions", id));
@@ -82,35 +154,37 @@ onSnapshot(ref, async (snapshot) => {
 });
 
 
+
 function initializeGame(){
   gameExists().then((exists) => {
     if(exists && playerCount >= 2) {
-      var linkContainer = document.getElementById('linkContainer');
-      linkContainer.style.display = 'none';
       const playerInfoElement = document.getElementById('playerInfo');
       playerInfoElement.textContent = "Players: 2/2";
       document.getElementById('turnInfo').textContent = "Black's Turn";
       const boardElement = document.getElementById('goBoard');
       let duplicate = false;    
       let cornerCount = 0;
-      let isBlack = firstPlayer;
+      isBlack = firstPlayer;
       let board = createBoardArray(boardSize+2); // Made this `let` to allow updates
       let clearCounter = 0;
       let winner = false;
       if(isBlack){
-        document.getElementById('player').textContent = "Black";
+        document.getElementById('player').textContent = "Player: Black";
       }
       else{
-        document.getElementById('player').textContent = "White";
+        document.getElementById('player').textContent = "Player: White";
       }
+      updateEvalBar(50,50);
+      blackLive.textContent = "0";
+      whiteLive.textContent = '0';
+      
       
       
       resignButton.addEventListener('click', async () => {
         const ref = doc(db, "sessions", id);
         setDoc(ref, { win: true, resigned: true, resignedPlayerisBlack: isBlack }, { merge: true });
-        const docSnapshot = await getDoc(doc(db, "sessions", id));
-        win(convert(docSnapshot.data().board, 19));
       });
+      
       
       async function playSurroundSound(){
         setDoc(ref, { surroundSound: true }, { merge: true });
@@ -144,6 +218,16 @@ function initializeGame(){
           setDoc(ref, { surroundSound: false }, { merge: true });
         }
         
+        
+//        if(!isBlack){
+//          player1Timer.elapsedTime = data.firstTime;
+//          player2Timer.elapsedTime = data.secondTime;
+//        }
+//        else{
+//          player2Timer.elapsedTime = data.firstTime;
+//          player1Timer.elapsedTime = data.secondTime;
+//        }
+        
         firstPlayerBlack = data.firstPlayerBlack;
         if(data.firstPlayerBlack){
           if(winCondition()){
@@ -162,10 +246,10 @@ function initializeGame(){
                 disable();  
               }
 
-
               firstPlayer=!firstPlayer;
               if(!isBlack && count%2===0){ //checks for doubles from second player.
                 firstPlayer=!firstPlayer;
+//                switchTurn();
               }
 
 
@@ -178,6 +262,7 @@ function initializeGame(){
           }
         }
         else{
+          
           if(winCondition()){
             win(board);
           }
@@ -193,9 +278,12 @@ function initializeGame(){
                 disable();
               }
             
+//              switchTurn();
               firstPlayer = !firstPlayer;
+              
               if(isBlack && count%4===3){ //checks for doubles from second player.
                 firstPlayer=!firstPlayer;
+//                switchTurn();
               }
 
             
@@ -211,6 +299,8 @@ function initializeGame(){
         
       });
       renderBoard(board, boardElement, firstPlayerBlack);
+
+
       
       function winCondition(){
         let emptyCount = 0;
@@ -503,16 +593,22 @@ function initializeGame(){
           }
           else if(isBlack && !firstPlayer){
             turnInfoElement.textContent = "White's Turn";
-          }
-          else if(!isBlack && !firstPlayer){
             turnInfoElement.textContent = "Black's Turn";
           }
           else if(!isBlack && firstPlayer){
             turnInfoElement.textContent = "White's Turn";
           }
           const counts = countWhite(board);
-          blackLive.textContent = counts[1];
-          whiteLive.textContent = counts[0];
+          if(isBlack){
+            blackLive.textContent = counts[0];
+            whiteLive.textContent = counts[1];
+          }
+          else{
+            blackLive.textContent = counts[1];
+            whiteLive.textContent = counts[0];
+          }
+          console.log(counts[1], [counts[0]])
+          updateEvalBar(parseInt(counts[0]), parseInt(counts[1]));
         }
       }  
 
@@ -667,7 +763,7 @@ function renderBoard(board, element, firstPlayerBlack) {
               previousBoard = board.map(row => [...row]);
             
               const flattenedBoard = board.flat();
-              placeStoneSound.play();
+//              placeStoneSound.play();
             
               let moveStorage = [];
             
@@ -685,6 +781,8 @@ function renderBoard(board, element, firstPlayerBlack) {
                       win: false,
                       resigned: false,
                       moveStorage: moveStorage,
+//                      firstTime: firstTime,
+//                      secondTime: secondTime,
                   }, { merge: true });
               } catch (error) {
                   console.error("Error updating document: ", error);
@@ -949,12 +1047,16 @@ onSnapshot(ref, async (snap) => {
   }
 });
 
+let done = false;
+
 async function win(board){
   const ref = doc(db, "sessions", id);
   setDoc(ref, { win: true }, { merge: true });
   const document = await getDoc(doc(db, "sessions", id));
   endGamePopup.style.display = 'block';
   victory.play();
+  done = true;
+  disable();
   
   
   
@@ -996,6 +1098,7 @@ function convert(flatArray, size) {
   }
   return board;
 } 
+
 
 function disable(){
   document.querySelectorAll("#goBoard .slot button").forEach(button => button.disabled = true);
@@ -1052,11 +1155,36 @@ redirectButton.addEventListener('click', () => {
 let toggleClose = false
 closeButton.addEventListener('click', () => {
   if (!toggleClose) {
-    endGamePopup.style.bottom = '-116px'; // Adjust the percentage as needed
+    endGamePopup.style.bottom = '-206px'; // Adjust the percentage as needed
     toggleClose = !toggleClose;
   } else {
     endGamePopup.style.bottom = '40%'; // Reset margin to 0
     toggleClose = !toggleClose;
   }
 });
+;
+
+
+function updateEvalBar(whiteTerritory, blackTerritory){
+  const totalTerritory = whiteTerritory + blackTerritory;
+  const whitePercentage = (whiteTerritory / totalTerritory) * 100;
+  const blackPercentage = (blackTerritory / totalTerritory) * 100;
+  if(isBlack){
+    document.getElementById('whiteTerritoryBar').style.top = `7.5%`;
+    document.getElementById('blackTerritoryBar').style.bottom = `7.5%`;
+    document.getElementById('whiteLive').style.color = `#fff`;
+    document.getElementById('blackLive').style.color = `#262421`;
+  }
+  else{
+    document.getElementById('whiteTerritoryBar').style.bottom = `7.5%`;
+    document.getElementById('blackTerritoryBar').style.top = `7.5%`;
+    document.getElementById('blackLive').style.color = `#fff`;
+    document.getElementById('whiteLive').style.color = `#262421`;
+  }
+
+  document.getElementById('whiteTerritoryBar').style.height = `${whitePercentage*0.85}%`;
+  document.getElementById('blackTerritoryBar').style.height = `${blackPercentage*0.85}%`;
+}
+
+
 
