@@ -27,12 +27,15 @@ const closeButton = document.querySelector('.close');
 const winnerSpan = document.getElementById('winner');
 const totalMovesSpan = document.getElementById('totalMoves');
 let previousBoard = null;  
-let previousBoardFake = null;  
+let previousBoardFake = null; 
 let firstPlayerBlack = null;
 const placeStoneSound = new Audio('stones.mp3');
 placeStoneSound.volume = 0.5;
 const surroundSound = new Audio('surround.mp3');
 surroundSound.volume = 0.5;
+const victory = new Audio('victory.mp3');
+victory.volume = 0.25;
+const boardSize = parseInt(localStorage.getItem('boardSize'));
 
 async function gameExists(){
   const docSnapshot = await getDoc(doc(db, "sessions", id));
@@ -43,6 +46,29 @@ async function gameExists(){
   }
 }
 incrementPlayerCount();
+
+var copied = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+  var copyButton = document.getElementById('copyButton');
+
+  
+  if(!copied){
+    copyButton.addEventListener('click', function() {
+      const currentUrl = window.location.href; // Gets the current page URL
+      navigator.clipboard.writeText(currentUrl).then(function() {
+        console.log('URL successfully copied to clipboard');
+        // Optionally, display a confirmation message to the user
+        copyButton.textContent = 'Copied!';
+        copied = true;
+      })
+      .catch(function(err) {
+        console.error('Error in copying URL: ', err);
+      });
+    });
+  }
+});
+
 
 
 onSnapshot(ref, async (snapshot) => {
@@ -59,24 +85,24 @@ onSnapshot(ref, async (snapshot) => {
 function initializeGame(){
   gameExists().then((exists) => {
     if(exists && playerCount >= 2) {
+      var linkContainer = document.getElementById('linkContainer');
+      linkContainer.style.display = 'none';
       const playerInfoElement = document.getElementById('playerInfo');
       playerInfoElement.textContent = "Players: 2/2";
-      const boardSize = parseInt(localStorage.getItem('boardSize'));
       document.getElementById('turnInfo').textContent = "Black's Turn";
       const boardElement = document.getElementById('goBoard');
       let duplicate = false;    
       let cornerCount = 0;
       let isBlack = firstPlayer;
+      let board = createBoardArray(boardSize+2); // Made this `let` to allow updates
+      let clearCounter = 0;
+      let winner = false;
       if(isBlack){
         document.getElementById('player').textContent = "Black";
       }
       else{
         document.getElementById('player').textContent = "White";
       }
-      
-      let board = createBoardArray(boardSize+2); // Made this `let` to allow updates
-      let clearCounter = 0;
-      let winner = false;
       
       
       resignButton.addEventListener('click', async () => {
@@ -85,6 +111,10 @@ function initializeGame(){
         const docSnapshot = await getDoc(doc(db, "sessions", id));
         win(convert(docSnapshot.data().board, 19));
       });
+      
+      async function playSurroundSound(){
+        setDoc(ref, { surroundSound: true }, { merge: true });
+      }
       
       
       function updateDynamicStyles(boardSize) {
@@ -108,6 +138,12 @@ function initializeGame(){
       
       onSnapshot(ref, async (doc) => {
         const data = doc.data();
+          placeStoneSound.play();
+        if(data.surroundSound){
+          surroundSound.play();
+          setDoc(ref, { surroundSound: false }, { merge: true });
+        }
+        
         firstPlayerBlack = data.firstPlayerBlack;
         if(data.firstPlayerBlack){
           if(winCondition()){
@@ -206,16 +242,16 @@ function initializeGame(){
           for (let i = 1; i < blackBoard.length-1; i++) {
               for (let j = 1; j < blackBoard[i].length-1; j++) {
                 if(!((i === 1 && j === 1) || (i === 1 && j === blackBoard.length-2) || (i === blackBoard.length-2 && j === 1) || (i === blackBoard.length-2 && j === blackBoard.length-2))){
-                  if (blackBoard[i][j] === 1 && (blackBoard[i+1][j] === 20 && blackBoard[i-1][j] === 2 && blackBoard[i][j+1] === 2 && blackBoard[i][j-1] === 2)){
+                  if (blackBoard[i][j] === 1 && (blackBoard[i+1][j] === 10 && blackBoard[i-1][j] === 2 && blackBoard[i][j+1] === 2 && blackBoard[i][j-1] === 2)){
                     emptyCount++;
                   }
-                  if (blackBoard[i][j] === 1 && (blackBoard[i+1][j] === 2 && blackBoard[i-1][j] === 20 && blackBoard[i][j+1] === 2 && blackBoard[i][j-1] === 2)){
+                  if (blackBoard[i][j] === 1 && (blackBoard[i+1][j] === 2 && blackBoard[i-1][j] === 10 && blackBoard[i][j+1] === 2 && blackBoard[i][j-1] === 2)){
                     emptyCount++; 
                   }
-                  if (blackBoard[i][j] === 1 && (blackBoard[i+1][j] === 2 && blackBoard[i-1][j] === 2 && blackBoard[i][j+1] === 20 && blackBoard[i][j-1] === 2)){
+                  if (blackBoard[i][j] === 1 && (blackBoard[i+1][j] === 2 && blackBoard[i-1][j] === 2 && blackBoard[i][j+1] === 10 && blackBoard[i][j-1] === 2)){
                     emptyCount++;
                   }
-                  if (blackBoard[i][j] === 1 && (blackBoard[i+1][j] === 2 && blackBoard[i-1][j] === 2 && blackBoard[i][j+1] === 2 && blackBoard[i][j-1] === 20)){
+                  if (blackBoard[i][j] === 1 && (blackBoard[i+1][j] === 2 && blackBoard[i-1][j] === 2 && blackBoard[i][j+1] === 2 && blackBoard[i][j-1] === 10)){
                     emptyCount++; 
                   } 
                 }
@@ -225,16 +261,16 @@ function initializeGame(){
           for (let i = 1; i < whiteBoard.length-1; i++) {
               for (let j = 1; j < whiteBoard[i].length-1; j++) {
                   if(!((i === 1 && j === 1) || (i === 1 && j === whiteBoard.length-2) || (i === whiteBoard.length-2 && j === 1) || (i === whiteBoard.length-2 && j === whiteBoard.length-2))){
-                    if (whiteBoard[i][j] === 2 && (whiteBoard[i+1][j] === 10 && whiteBoard[i-1][j] === 1 && whiteBoard[i][j+1] === 1 && whiteBoard[i][j-1] === 1)){
+                    if (whiteBoard[i][j] === 2 && (whiteBoard[i+1][j] === 20 && whiteBoard[i-1][j] === 1 && whiteBoard[i][j+1] === 1 && whiteBoard[i][j-1] === 1)){
                       emptyCount++; 
                     }
-                    if (whiteBoard[i][j] === 2 && (whiteBoard[i+1][j] === 1 && whiteBoard[i-1][j] === 10 && whiteBoard[i][j+1] === 1 && whiteBoard[i][j-1] === 1)){
+                    if (whiteBoard[i][j] === 2 && (whiteBoard[i+1][j] === 1 && whiteBoard[i-1][j] === 20 && whiteBoard[i][j+1] === 1 && whiteBoard[i][j-1] === 1)){
                       emptyCount++; 
                     }
-                    if (whiteBoard[i][j] === 2 && (whiteBoard[i+1][j] === 1 && whiteBoard[i-1][j] === 1 && whiteBoard[i][j+1] === 10 && whiteBoard[i][j-1] === 1)){
+                    if (whiteBoard[i][j] === 2 && (whiteBoard[i+1][j] === 1 && whiteBoard[i-1][j] === 1 && whiteBoard[i][j+1] === 20 && whiteBoard[i][j-1] === 1)){
                       emptyCount++; 
                     }
-                    if (whiteBoard[i][j] === 2 && (whiteBoard[i+1][j] === 1 && whiteBoard[i-1][j] === 1 && whiteBoard[i][j+1] === 1 && whiteBoard[i][j-1] === 10)){
+                    if (whiteBoard[i][j] === 2 && (whiteBoard[i+1][j] === 1 && whiteBoard[i-1][j] === 1 && whiteBoard[i][j+1] === 1 && whiteBoard[i][j-1] === 20)){
                       emptyCount++; 
                     }
                   }
@@ -251,25 +287,25 @@ function initializeGame(){
                   let fakeBoardWhite = placeStoneEmulator(i,j, board.map(row => [...row]), false);
                   for (let a = 0; a < fakeBoardBlack.length; a++) {
                     for (let b = 0; b < fakeBoardBlack[i].length; b++) {
-                      if(fakeBoardBlack[a][b] === 10){
+                      if(fakeBoardBlack[a][b] === 10 || fakeBoardBlack[a][b] === 1){
                         fakeBlackCounter++;
                       }
-                      if(board[a][b] === 10){
+                      if(board[a][b] === 10 || board[a][b] === 1){
                         blackCounter++;
                       }
                     }
                   }       
                   for (let a = 0; a < fakeBoardWhite.length; a++) {
                     for (let b = 0; b < fakeBoardWhite[i].length; b++) {
-                      if(fakeBoardWhite[a][b] === 20){
+                      if(fakeBoardWhite[a][b] === 20 || fakeBoardWhite[a][b] === 2){
                         fakeWhiteCounter++;
                       }
-                      if(board[a][b] === 20){
+                      if(board[a][b] === 20 || board[a][b] === 2){
                         whiteCounter++;
                       }
                     }
                   }
-                  if(fakeBlackCounter>blackCounter || fakeWhiteCounter>whiteCounter){
+                  if(fakeBlackCounter>blackCounter+1 || fakeWhiteCounter>whiteCounter+1){
                     emptyCount++;
                   }
                 }
@@ -287,13 +323,13 @@ function initializeGame(){
       function placeStoneEmulator(row, col, fakeBoard, black) {
           if (fakeBoard[row][col] === 0 || fakeBoard[row][col] === 10 || fakeBoard[row][col] === 20) {
               let tempBoard = fakeBoard.map(row => [...row]);
-              tempBoard[row][col] = black ? 2 : 1;
+              tempBoard[row][col] = black ? 1 : 2;
               let capturedStones = checkAndRemoveSurroundedStonesEmulator(tempBoard, isBlack);
               let visited = new Set(), group = [], emptyTiles = new Set();
               let isSelfCapture = isSurrounded(tempBoard, row, col, tempBoard[row][col], visited, group, emptyTiles) && capturedStones === 0;
-              if (isSelfCapture || areBoardsEqual(tempBoard, previousBoardFake)) {
-                return fakeBoard;
-              }
+//              if (isSelfCapture || areBoardsEqual(tempBoard, previousBoardFake)) {
+//                return fakeBoard;
+//              }
               previousBoardFake = tempBoard;
               return tempBoard;
             
@@ -301,31 +337,156 @@ function initializeGame(){
           return fakeBoard;
       }
       
-      function checkAndRemoveSurroundedStonesEmulator(board, isBlack) {
-        let oppositeColor = isBlack ? 1 : 2;
-        for (let i = 0; i < board.length; i++) {
-            for (let j = 0; j < board[i].length; j++) {
-                  if (board[i][j] === oppositeColor || board[i][j] === 0 || board[i][j] === 10 || board[i][j] === 20) { // Check empty tiles as well
+      function checkAndRemoveSurroundedStonesEmulator(fakeBoard, isBlack) {
+        let oppositeColor = isBlack ? 2 : 1;
+        for (let i = 0; i < fakeBoard.length; i++) {
+            for (let j = 0; j < fakeBoard[i].length; j++) {
+                  if (fakeBoard[i][j] === oppositeColor || fakeBoard[i][j] === 0 || fakeBoard[i][j] === 10 || fakeBoard[i][j] === 20) { // Check empty tiles as well
                       let visited = new Set();
                       let emptyTiles = new Set();
                       let group = [];
-                      if (isSurrounded(board, i, j, oppositeColor, visited, group, emptyTiles)) {
+                      if (isSurrounded(fakeBoard, i, j, oppositeColor, visited, group, emptyTiles)) {
                           group.forEach(([r, c]) => {
-                              board[r][c] = isBlack ? 10 : 20; // Mark surrounded stones as territory
+                              fakeBoard[r][c] = isBlack ? 10 : 20; // Mark surrounded stones as territory
                           });
                           emptyTiles.forEach((tile) => {
                               const [r, c] = tile.split(",").map(Number);
-                              board[r][c] = isBlack ? 10 : 20; // Mark empty tiles as territory
+                              fakeBoard[r][c] = isBlack ? 10 : 20; // Mark empty tiles as territory
                           });
 
 
-                      } 
-                    clearEmpty(i, j, board);
+                      }
+                    clearEmpty(i, j, fakeBoard);
 
 
                   }
             }
         }
+        for (let i = 0; i < fakeBoard.length; i++) {
+            for (let j = fakeBoard[i].length-1; j >= 0; j--) {
+                  if (fakeBoard[i][j] === oppositeColor || fakeBoard[i][j] === 0 || fakeBoard[i][j] === 10 || fakeBoard[i][j] === 20) { // Check empty tiles as well
+                      let visited = new Set();
+                      let emptyTiles = new Set();
+                      let group = [];
+                      if (isSurrounded(fakeBoard, i, j, oppositeColor, visited, group, emptyTiles)) {
+                          group.forEach(([r, c]) => {
+                              fakeBoard[r][c] = isBlack ? 10 : 20; // Mark surrounded stones as territory
+                          });
+                          emptyTiles.forEach((tile) => {
+                              const [r, c] = tile.split(",").map(Number);
+                              fakeBoard[r][c] = isBlack ? 10 : 20; // Mark empty tiles as territory
+                          });
+
+
+                      }
+                    clearEmpty(i, j, fakeBoard);
+
+
+                  }
+            }
+        }
+        for (let i = fakeBoard.length-1; i >= 0; i--) {
+            for (let j = 0; j < fakeBoard[i].length; j++) {
+                  if (fakeBoard[i][j] === oppositeColor || fakeBoard[i][j] === 0 || fakeBoard[i][j] === 10 || fakeBoard[i][j] === 20) { // Check empty tiles as well
+                      let visited = new Set();
+                      let emptyTiles = new Set();
+                      let group = [];
+                      if (isSurrounded(fakeBoard, i, j, oppositeColor, visited, group, emptyTiles)) {
+                          group.forEach(([r, c]) => {
+                              fakeBoard[r][c] = isBlack ? 10 : 20; // Mark surrounded stones as territory
+                          });
+                          emptyTiles.forEach((tile) => {
+                              const [r, c] = tile.split(",").map(Number);
+                              fakeBoard[r][c] = isBlack ? 10 : 20; // Mark empty tiles as territory
+                          });
+
+
+                      }
+                    clearEmpty(i, j, fakeBoard);
+
+
+                  }
+            }
+        }
+        for (let i = fakeBoard.length-1; i >= 0; i--) {
+            for (let j = fakeBoard[i].length-1; j >= 0; j--) {
+                  if (fakeBoard[i][j] === oppositeColor || fakeBoard[i][j] === 0 || fakeBoard[i][j] === 10 || fakeBoard[i][j] === 20) { // Check empty tiles as well
+                      let visited = new Set();
+                      let emptyTiles = new Set();
+                      let group = [];
+                      if (isSurrounded(fakeBoard, i, j, oppositeColor, visited, group, emptyTiles)) {
+                          group.forEach(([r, c]) => {
+                              fakeBoard[r][c] = isBlack ? 10 : 20; // Mark surrounded stones as territory
+                          });
+                          emptyTiles.forEach((tile) => {
+                              const [r, c] = tile.split(",").map(Number);
+                              fakeBoard[r][c] = isBlack ? 10 : 20; // Mark empty tiles as territory
+                          });
+
+
+                      }
+                    clearEmpty(i, j, fakeBoard);
+
+
+                  }
+            }
+        }
+      }
+      
+      
+      let redCountFake = 0;
+      let blueCountFake = 0;
+      let yellowCountFake = 0;
+      let greenCountFake = 0;
+      let flipCounterFake = 0;
+      let pieceCountFake = 0;
+      let cornerFake = false;
+
+      function isSurroundedFake(fakeBoard, row, col, color, visited, group, emptyTiles) {
+        if(fakeBoard[row][col] === 3){
+          redCountfake++;
+        }
+        if(fakeBoard[row][col] === 4){
+          blueCountfake++;
+        }
+        if(fakeBoard[row][col] === 5){
+          yellowCountfake++;
+        }
+        if(fakeBoard[row][col] === 6){
+          greenCountfake++;
+        }
+        
+        if((redCountFake!==0&&blueCountFake!==0&&greenCountFake!==0) || (redCountFake!==0&&blueCountFake!==0&&yellowCountFake!==0) || (yellowCountFake!==0&&blueCountFake!==0&&greenCountFake!==0) || (yellowCountFake!==0&&greenCountFake!==0&&redCountFake!==0)){
+          redCountFake = 0;
+          blueCountFake = 0;
+          yellowCountFake = 0;
+          greenCountFake = 0;
+          return false;
+        }
+        
+        let key = row + "," + col;
+        if (visited.has(key)){
+          return true; 
+        }
+        visited.add(key);
+        if (!isValidPos(row, col)){
+          return false;
+        }   
+        if (fakeBoard[row][col] === 0 || fakeBoard[row][col] === 10 || fakeBoard[row][col] === 20) {
+          emptyTiles.add(key);
+        } else 
+        if (fakeBoard[row][col] !== color || fakeBoard[row][col] === 0) {
+          return true;
+        } 
+        else {
+          group.push([row, col]);
+        }
+
+        const directions = [[-1, 0], [0, 1], [1, 0], [0, -1]];
+        return directions.every(([dRow, dCol]) => {
+          return isSurrounded(fakeBoard, row + dRow, col + dCol, color, visited, group, emptyTiles);
+        });
+        
       }
       
       function isAllowedValue(value) {
@@ -446,11 +607,11 @@ function renderBoard(board, element, firstPlayerBlack) {
 
             if (board[i][j] === 1) {
                 let stone = document.createElement('div');
-                stone.className = 'stone white';
+                stone.className = 'stone black';
                 button.appendChild(stone);
             } else if (board[i][j] === 2) {
                 let stone = document.createElement('div');
-                stone.className = 'stone black';
+                stone.className = 'stone white';
                 button.appendChild(stone);
             } else if (board[i][j] === 3) {
                 let stone = document.createElement('div');
@@ -479,6 +640,7 @@ function renderBoard(board, element, firstPlayerBlack) {
     }
 }
 
+
       function areBoardsEqual(board1, board2) {
           if (!board1 || !board2) return false; // Ensure both boards are not null
           if (board1.length !== board2.length) return false;
@@ -493,7 +655,7 @@ function renderBoard(board, element, firstPlayerBlack) {
       async function placeStone(row, col) {
           if (board[row][col] === 0 || board[row][col] === 10 || board[row][col] === 20) {
               let tempBoard = board.map(row => [...row]);
-              tempBoard[row][col] = isBlack ? 2 : 1;
+              tempBoard[row][col] = isBlack ? 1 : 2;
               let capturedStones = checkAndRemoveSurroundedStones(tempBoard, isBlack);
               let visited = new Set(), group = [], emptyTiles = new Set();
               let isSelfCapture = isSurrounded(tempBoard, row, col, tempBoard[row][col], visited, group, emptyTiles) && capturedStones === 0;
@@ -506,12 +668,23 @@ function renderBoard(board, element, firstPlayerBlack) {
             
               const flattenedBoard = board.flat();
               placeStoneSound.play();
+            
+              let moveStorage = [];
+            
+              const docSnapshot = await getDoc(doc(db, "sessions", id));
+              if(docSnapshot.data().moveStorage !== undefined){
+                moveStorage = docSnapshot.data().moveStorage;
+              }
+              moveStorage.push(row + ";" + col);
+            
+              console.log(moveStorage);
               try {
                   await setDoc(doc(db, "sessions", id), {
                       board: flattenedBoard,
                       firstPlayer: firstPlayer,
                       win: false,
                       resigned: false,
+                      moveStorage: moveStorage,
                   }, { merge: true });
               } catch (error) {
                   console.error("Error updating document: ", error);
@@ -520,7 +693,7 @@ function renderBoard(board, element, firstPlayerBlack) {
       }
       
       function checkAndRemoveSurroundedStones(board, isBlack) {
-          let oppositeColor = isBlack ? 1 : 2;
+          let oppositeColor = isBlack ? 2 : 1;
           for (let i = 0; i < board.length; i++) {
               for (let j = 0; j < board[i].length; j++) {
                     if (board[i][j] === oppositeColor || board[i][j] === 0 || board[i][j] === 10 || board[i][j] === 20) { // Check empty tiles as well
@@ -530,6 +703,7 @@ function renderBoard(board, element, firstPlayerBlack) {
                         if (isSurrounded(board, i, j, oppositeColor, visited, group, emptyTiles)) {
                             group.forEach(([r, c]) => {
                                 surroundSound.play();
+                                playSurroundSound();
                                 board[r][c] = isBlack ? 10 : 20; // Mark surrounded stones as territory
                             });
                             emptyTiles.forEach((tile) => {
@@ -552,7 +726,7 @@ function renderBoard(board, element, firstPlayerBlack) {
                         let emptyTiles = new Set();
                         let group = [];
                         if (isSurrounded(board, i, j, oppositeColor, visited, group, emptyTiles)) {
-                            group.forEach(([r, c]) => {                         
+                            group.forEach(([r, c]) => {
                                 board[r][c] = isBlack ? 10 : 20; // Mark surrounded stones as territory
                             });
                             emptyTiles.forEach((tile) => {
@@ -655,11 +829,11 @@ function renderBoard(board, element, firstPlayerBlack) {
       }
       
       function validPiece(cell){
-        return cell === 2 || cell === 10 || cell === 3 || cell === 4 || cell === 5 || cell === 6;
+        return cell === 1 || cell === 10 || cell === 3 || cell === 4 || cell === 5 || cell === 6;
       }
       
       function validPieceWhite(cell){
-        return cell === 1 || cell === 20 || cell === 3 || cell === 4 || cell === 5 || cell === 6;
+        return cell === 2 || cell === 20 || cell === 3 || cell === 4 || cell === 5 || cell === 6;
       }
       
       
@@ -758,10 +932,10 @@ function countWhite(board) {
   let whiteCount = 0;
   let blackCount = 0;
   board.forEach(row => {row.forEach(cell => {
-    if (cell === 2 || cell === 10) {
+    if (cell === 1 || cell === 10) {
       whiteCount++;
     }
-    if (cell === 1 || cell === 20){
+    if (cell === 2 || cell === 20){
       blackCount++;
     }
   });});
@@ -780,6 +954,12 @@ async function win(board){
   setDoc(ref, { win: true }, { merge: true });
   const document = await getDoc(doc(db, "sessions", id));
   endGamePopup.style.display = 'block';
+  victory.play();
+  
+  
+  
+  const storageRef = doc(db, 'size ' + boardSize, id);
+  setDoc(storageRef, { storage: document.data().moveStorage }, { merge: true });
   
   if(document.data().resigned === false){
     const counts = countWhite(board);
@@ -864,9 +1044,12 @@ async function incrementPlayerCount() {
   
 }
 
+const redirectButton = document.getElementById('redirectButton');
+redirectButton.addEventListener('click', () => {
+  window.location.href = 'index.html';
+});
 
-let toggleClose = false;
-
+let toggleClose = false
 closeButton.addEventListener('click', () => {
   if (!toggleClose) {
     endGamePopup.style.bottom = '-116px'; // Adjust the percentage as needed

@@ -163,3 +163,54 @@ body {
 .line {
   border-bottom: 1px solid #888;
 }
+
+
+#linkContainer {
+  position: absolute; /* Position it over other content if needed */
+  top: 50%; /* Halfway down the viewport */
+  left: 50%; /* Halfway across the viewport */
+  transform: translate(-50%, -50%); /* Adjust positioning to true center */
+  text-align: center; /* Center the text inside the container */
+}
+
+/* Optional: Styles to make the container and text more visible */
+#linkContainer p {
+  background-color: transparent;
+  background: rgba(255, 255, 255, 0.8);
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+
+#copyButton {
+  padding: 3px 7px; /* Smaller padding to reduce overall size */
+  font-size: 14px; /* Smaller font size */
+  margin-top: -20px; /* Move up relative to its normal position */
+  display: inline-flex; /* Keep the flex layout for internal alignment */
+  align-items: center; /* Center the content vertically */
+  gap: 5px; /* Reduce gap between icon and text for a compact design */
+  background-color: #f9f9f9; /* Background color as before */
+  color: #333; /* Text color as before */
+  border: 1px solid #ccc; /* Border as before */
+  border-radius: 4px; /* Rounded corners as before */
+  cursor: pointer; /* Cursor as before */
+}
+
+#copyButton:hover {
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Shadow for button hover */
+}
+
+#copyButton .copyIcon {
+  width: 15px; /* Smaller width for the icon */
+  height: 15px; /* Smaller height for the icon */
+  background-color: #fff; /* Background color as before */
+  border: 1px solid #ccc; /* Border as before */
+  position: relative; /* Position as before */
+}
+
+#copyButton .copyIcon::before {
+  top: 2px; /* Adjust to align with the smaller icon */
+  right: -2px; /* Adjust to align with the smaller icon */
+}
+
